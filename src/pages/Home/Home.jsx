@@ -92,8 +92,6 @@ export const Home = () => {
     }
 
     useEffect(() => {
-        console.log(room);
-        console.log(player);
         if (!player) return
         if (!room || player.progress === 0) {
             socketService.emit('play', player)

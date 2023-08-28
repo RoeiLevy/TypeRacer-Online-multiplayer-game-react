@@ -1,6 +1,12 @@
 import { io } from "socket.io-client";
 
-const socket = io('http://localhost:8080');
+let socket
+if (process.env.NODE_ENV === 'production') {
+  socket = io('https://type-racer-sandy.vercel.app/');
+} else {
+  socket = io('http://localhost:8080');
+}
+
 
 const on = (eventType, cb) => {
   socket.on(eventType, cb)
