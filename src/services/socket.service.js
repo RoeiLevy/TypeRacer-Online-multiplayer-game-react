@@ -1,0 +1,21 @@
+import { io } from "socket.io-client";
+
+const socket = io('http://localhost:8080');
+
+const on = (eventType, cb) => {
+  socket.on(eventType, cb)
+}
+
+const off = (eventType, cb) => {
+  if (!socket) return;
+  if (!cb) socket.removeAllListeners(eventType)
+  else socket.off(eventType, cb)
+}
+
+const emit = (eventType, data) => {
+  socket.emit(eventType, data)
+}
+
+export const socketService = {
+  on, emit, off
+}

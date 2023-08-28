@@ -1,0 +1,54 @@
+.home {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    .timer {
+        text-align: center;
+    }
+    .race {
+        display: flex;
+        flex-direction: column;
+            gap: 20px;
+        .player {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            h5{
+                margin: 0;
+                width: 10%;
+                text-align: center;
+            }
+            .progress {
+                width: 100%;
+            }
+        }
+    }
+    .quote {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        user-select: none;
+        h3{
+            text-align: center;
+        }
+        input{
+            width: 50%;
+        }
+    }
+    .results {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        h2{
+            color: #2196F3;
+            border-bottom:1px solid #2196F3;
+        }
+        .result{
+            margin: 10px;
+            font-size: 18px;
+        }
+    }
+}
+.p-dialog .p-dialog-header-icons{
+    display: none !important;
+}

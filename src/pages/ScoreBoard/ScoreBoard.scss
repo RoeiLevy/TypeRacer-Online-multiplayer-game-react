@@ -1,0 +1,19 @@
+.score-board {
+    // text-align: center;
+    .p-fieldset-content {
+        padding-top: 0 !important;
+        .score {
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 1.25rem;
+            margin: 0.5rem;
+            h4{
+                margin: 0;
+            }
+            p{
+                font-size: 12px;
+                // margin: 8px;
+            }
+        }
+    }
+}
