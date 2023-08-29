@@ -15,7 +15,7 @@ export const ScoreBoard = () => {
         })()
     }, [user])
 
-    if (user?.isLogin) {
+    if (user?.isLogin && scores) {
         return (
             <div className="score-board container">
                 <Fieldset legend="My Scores" toggleable>

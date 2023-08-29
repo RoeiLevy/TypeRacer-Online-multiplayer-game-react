@@ -2,7 +2,7 @@ import axios from 'axios'
 
 let base_url
 if (process.env.NODE_ENV === 'production') {
-    base_url = 'https://type-racer-sandy.vercel.app/api'
+    base_url = 'https://type-racer-6n4q.onrender.com/api'
 } else {
     base_url = 'http://localhost:8080/api'
 }

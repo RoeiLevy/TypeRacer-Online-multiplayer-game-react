@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 
 let socket
 if (process.env.NODE_ENV === 'production') {
-  socket = io('https://type-racer-sandy.vercel.app/');
+  socket = io('https://type-racer-6n4q.onrender.com');
 } else {
   socket = io('http://localhost:8080');
 }
