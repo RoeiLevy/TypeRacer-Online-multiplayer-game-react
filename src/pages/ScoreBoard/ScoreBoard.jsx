@@ -2,10 +2,25 @@ import { useEffect, useState } from 'react'
 import './ScoreBoard.scss'
 import { getScoresByUserId } from '../../services/api.service'
 import { Fieldset } from 'primereact/fieldset';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
+import { setUser } from '../../store/features/user/userSlice';
+
 export const ScoreBoard = () => {
     const [scores, setScores] = useState(null)
     const { user } = useSelector((state) => state.user)
+    const dispatch = useDispatch()
+
+    const login = async () => {
+        const auth = getAuth()
+        const provider = new GoogleAuthProvider()
+        const { user } = await signInWithPopup(auth, provider)
+        const id = user.uid
+        const username = user.displayName
+        const isLogin = true
+        dispatch(setUser({ id, username, isLogin }))
+    }
 
     useEffect(() => {
         if (!user?.isLogin) return
@@ -15,8 +30,12 @@ export const ScoreBoard = () => {
         })()
     }, [user])
 
-    if (user?.isLogin && scores) {
-        return (
+    if (user?.isLogin) {
+        if (!scores) {
+            return <div className="score-board container">
+                <ProgressSpinner />
+            </div>
+        } else return (
             <div className="score-board container">
                 <Fieldset legend="My Scores" toggleable>
                     <div className="scores">
@@ -29,7 +48,7 @@ export const ScoreBoard = () => {
                         ))}
                     </div>
                 </Fieldset>
-                <Fieldset legend="Global Scores" toggleable>
+                {/* <Fieldset legend="Global Scores" toggleable collapsed={true}> */}
                     {/* <div className="scores">
                 {scores && scores.map(score => (
                         <div className="score">
@@ -39,14 +58,15 @@ export const ScoreBoard = () => {
                         </div>
                         ))}
                     </div> */}
-                </Fieldset>
-
+                {/* </Fieldset> */}
             </div>
         )
     } else {
         return (
             <div className='score-board container'>
-                Login to see scores
+                <div className="login">
+                    <span onClick={login}>Login</span> to see your scores!
+                </div>
             </div>
         )
     }

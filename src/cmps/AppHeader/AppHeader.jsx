@@ -20,12 +20,12 @@ export const AppHeader = () => {
                 navigate('/score-board')
             }
         },
-        {
-            label: 'About', icon: 'pi pi-info-circle', command: () => {
-                // setVisibleRight(false)
-                navigate('/about')
-            }
-        }
+        // {
+        //     label: 'About', icon: 'pi pi-info-circle', command: () => {
+        //         // setVisibleRight(false)
+        //         navigate('/about')
+        //     }
+        // }
     ];
 
     useEffect(() => {
