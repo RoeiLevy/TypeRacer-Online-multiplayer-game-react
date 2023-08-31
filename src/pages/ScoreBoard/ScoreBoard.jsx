@@ -5,11 +5,11 @@ import { Fieldset } from 'primereact/fieldset';
 import { useDispatch, useSelector } from 'react-redux';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
-import { setUser } from '../../store/features/user/userSlice';
+import { setUser } from '../../store/features/game/gameSlice';
 
 export const ScoreBoard = () => {
     const [scores, setScores] = useState(null)
-    const { user } = useSelector((state) => state.user)
+    const { user } = useSelector((state) => state.game)
     const dispatch = useDispatch()
 
     const login = async () => {
@@ -25,7 +25,7 @@ export const ScoreBoard = () => {
     useEffect(() => {
         if (!user?.isLogin) return
         (async function () {
-            const playerScores = await getScoresByUserId('yk5ZJC2p1sgHakNapkh7ir3EzLP2')
+            const playerScores = await getScoresByUserId(user.id)
             setScores(playerScores)
         })()
     }, [user])

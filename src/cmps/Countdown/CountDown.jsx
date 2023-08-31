@@ -1,9 +1,8 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 
-export const CountDown = forwardRef(({ targetTime, isGameOn, setIsInputDisabled , inputRef }, ref) => {
+export const CountDown = forwardRef(({ targetTime, isGameOn, setIsInputDisabled }, ref) => {
     const [elapsed, setElapsed] = useState('')
     const [intervalId, setIntervalId] = useState(null)
-    const [isInputWasFocused, setIsInputWasFocused] = useState(false)
     useEffect(() => {
 
         function formatTime(milliseconds) {
@@ -24,11 +23,6 @@ export const CountDown = forwardRef(({ targetTime, isGameOn, setIsInputDisabled 
                 const countdown = formatTime(timeDifference);
                 timerElement.textContent = countdown;
             } else if (timeDifference <= 0) {
-                if(!isInputWasFocused){
-                    inputRef.current.focus()
-                    setIsInputWasFocused(true)
-                }
-                setIsInputDisabled(false)
                 const elapsedTime = now - targetTime;
                 const elapsed = formatTime(elapsedTime);
                 setElapsed(elapsed)
@@ -37,10 +31,13 @@ export const CountDown = forwardRef(({ targetTime, isGameOn, setIsInputDisabled 
         }
 
         const timerElement = document.getElementById('countdown');
-        updateTimer(); // Initial display
+        updateTimer();
         const interval = setInterval(updateTimer, 1000);
         setIntervalId(interval)
 
+        setTimeout(() => {
+            setIsInputDisabled(false)
+        }, targetTime - Date.now())
     }, [targetTime])
 
     useEffect(() => {

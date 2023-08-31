@@ -6,53 +6,45 @@ import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { CountDown } from '../../cmps/Countdown/CountDown';
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import './Home.scss'
 import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
-import { setUser } from '../../store/features/user/userSlice';
+import { setUser, setRoom } from '../../store/features/game/gameSlice';
+import 'firebase/auth';
+import './Home.scss'
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 export const Home = () => {
     const [isGameOn, setIsGameOn] = useState(true)
     const [isInputDisabled, setIsInputDisabled] = useState(true)
-    const [room, setRoom] = useState(null)
     const [visible, setVisible] = useState(true);
-    const [player, setPlayer] = useState(null)
     const [inputValue, setInputValue] = useState('')
     const [currentLetterIdx, setCurrentLetterIdx] = useState(0)
     const toast = useRef(null);
     const countDownRef = useRef(null);
     const inputRef = useRef(null)
-    const { user } = useSelector((state) => state.user)
+    const { user, room } = useSelector((state) => state.game)
     const dispatch = useDispatch()
 
     useEffect(() => {
-        if (user.isLogin) {
-            setPlayer({
-                id: user.id,
-                username: user.username,
-                progress: 0,
-                isBot: false
-            })
-        }
-        socketService.on('update-room', (room) => setRoom(room))
+        socketService.emit('ping', null)
+        socketService.on('update-room', (room) => dispatch(setRoom(room)))
         socketService.on('end-game', () => {
             setIsGameOn(false)
         })
     }, [])
+
+    useEffect(() => {
+        if (!isInputDisabled) {
+            inputRef.current.focus()
+        }
+    }, [isInputDisabled])
 
     const setPlayerLogin = async (loginType) => {
         let id = Math.random().toString(36).substring(2)
         let username = `Guest${Math.floor(100000 + Math.random() * 900000)}`
         let isLogin = false
         if (loginType === 'Guest') {
-            setPlayer({
-                id,
-                username,
-                progress: 0,
-                isBot: false
-            })
+            dispatch(setUser({ id, username, isLogin, progress: 0, isBot: false }))
         } else if (loginType === 'Google') {
             const auth = getAuth()
             const provider = new GoogleAuthProvider()
@@ -60,14 +52,8 @@ export const Home = () => {
             id = user.uid
             username = user.displayName
             isLogin = true
-            setPlayer({
-                id,
-                username,
-                progress: 0,
-                isBot: false
-            })
+            dispatch(setUser({ id, username, isLogin, progress: 0, isBot: false }))
         }
-        dispatch(setUser({ id, username, isLogin }))
         setVisible(false)
     }
 
@@ -88,30 +74,26 @@ export const Home = () => {
             document.querySelector(`.letter-${currentLetterIdx}`).style.color = 'red'
             setCurrentLetterIdx(currentLetterIdx + 1)
         }
-        setPlayer({ ...player, progress: getProgress() })
+        const progress = getProgress()
+        if (progress === 100) {
+            setIsInputDisabled(true)
+            const wpm = ((60 / (Math.round(Date.now() - room.startTimestamp) / 1000)) * room.quote.text.split(' ').length).toFixed(0)
+            const timeToFinish = countDownRef.current.elapsed
+            dispatch(setUser({ ...user, wpm, timeToFinish, progress }))
+        } else dispatch(setUser({ ...user, progress }))
     }
 
     useEffect(() => {
-        if (!player) return
-        if (!room || player.progress === 0) {
-            socketService.emit('play', player)
+        if (!user) return
+        if (!room || user.progress === 0) {
+            socketService.emit('play', user)
             return
         }
-        if (player.progress === 100) {
-            getResults()
-            return
-        }
-        socketService.emit('update-player', { player, roomId: room.id })
-    }, [player])
+        socketService.emit('update-player', { player: user, roomId: room.id })
+    }, [user])
 
     const getProgress = () => {
         return Math.floor((currentLetterIdx + 1) / room.quote.text.length * 100)
-    }
-    const getResults = () => {
-        const wpm = ((60 / (Math.round(Date.now() - room.startTimestamp) / 1000)) * room.quote.text.split(' ').length)
-        player.wpm = wpm.toFixed(0)
-        player.timeToFinish = countDownRef.current.elapsed
-        socketService.emit('update-player', { player, roomId: room.id })
     }
 
     const formatTimeStringToWords = (timeString) => {
@@ -142,7 +124,8 @@ export const Home = () => {
         setIsInputDisabled(true)
         setInputValue('')
         setCurrentLetterIdx(0)
-        setPlayer({ ...player, progress: 0 })
+        dispatch(setUser({ ...user, progress: 0, wpm: 0, timeToFinish: '' }))
+        dispatch(setRoom(null))
         setIsGameOn(true)
     }
 
@@ -152,13 +135,13 @@ export const Home = () => {
         return (
             <div className="home container">
                 <div className="timer">
-                    <CountDown ref={countDownRef} inputRef={inputRef} isGameOn={isGameOn} setIsInputDisabled={setIsInputDisabled} targetTime={room.startTimestamp} />
+                    <CountDown ref={countDownRef} isGameOn={isGameOn} setIsInputDisabled={setIsInputDisabled} targetTime={room.startTimestamp} />
                 </div>
                 <div className="race">
-                    {room.players.sort((playerA, playerB) => {
-                        if (playerA.id === player.id) {
+                    {room.players.slice().sort((playerA, playerB) => {
+                        if (playerA.id === user.id) {
                             return -1;
-                        } else if (playerB?.id === player.id) {
+                        } else if (playerB?.id === user.id) {
                             return 1;
                         } else {
                             return 0;
@@ -174,14 +157,15 @@ export const Home = () => {
                 </div>
                 <div className="quote">
                     <h3>
-                        {room.quote.text.split('').map((char, idx) => (
+                        "{room.quote.text.split('').map((char, idx) => (
                             <span key={`letter-${idx}`} className={`letter letter-${idx}`}>{char}</span>
-                        ))}
+                        ))}" <span className='author'>(By {room.quote.author})</span>
                     </h3>
                     <InputText ref={inputRef} disabled={isInputDisabled || !isGameOn} value={inputValue} onChange={(e) => handleChangeInput(e)} onPaste={handlePaste} />
                     <Toast ref={toast} position="bottom-center" />
                 </div>
                 {room.results.length > 0 && <div className="results">
+
                     <h2>Scores <i className="pi pi-chart-bar"></i></h2>
                     {room.results.map(p => p.wpm && p.timeToFinish && (
                         <div key={p.id} className="result">
@@ -192,17 +176,23 @@ export const Home = () => {
                 </div>}
             </div>
         )
-    } else if(!user.isLogin) return (
-        <div className="home container">
-            <Dialog header={headerContent} visible={visible} style={{ width: '40vw', textAlign: 'center' }} onHide={() => setVisible(false)} aria-controls={visible ? 'dlg' : null} aria-expanded={visible ? true : false}>
-                <div style={{ margin: '0' }}>
-                    <p style={{ margin: '0', marginBottom: '1.5rem' }}>In order to see your past results you have to login</p>
-                    <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                        <Button severity="secondary" label="Play as a guest" onClick={() => setPlayerLogin('Guest')} />
-                        <Button label="Login with Google" onClick={() => setPlayerLogin('Google')} autoFocus />
+    } else if (!user.id && !user.isLogin) {
+        return (
+            <div className="home container">
+                <Dialog header={headerContent} visible={visible} style={{ width: '40vw', textAlign: 'center' }} onHide={() => setVisible(false)} aria-controls={visible ? 'dlg' : null} aria-expanded={visible ? true : false}>
+                    <div style={{ margin: '0' }}>
+                        <p style={{ margin: '0', marginBottom: '1.5rem' }}>In order to see your past results you have to login</p>
+                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                            <Button severity="secondary" label="Play as a guest" onClick={() => setPlayerLogin('Guest')} />
+                            <Button label="Login with Google" onClick={() => setPlayerLogin('Google')} autoFocus />
+                        </div>
                     </div>
-                </div>
-            </Dialog>
+                </Dialog>
+            </div>
+        )
+    } else return (
+        <div className="home conatiner">
+            <ProgressSpinner />
         </div>
     )
 }

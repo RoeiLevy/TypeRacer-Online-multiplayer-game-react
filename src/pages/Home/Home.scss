@@ -30,6 +30,10 @@
         user-select: none;
         h3{
             text-align: center;
+            .author{
+                font-weight:500;
+                font-size: 14px;
+            }
         }
         input{
             width: 50%;
@@ -49,6 +53,14 @@
         .result{
             margin: 10px;
             font-size: 18px;
+        }
+    }
+    .p-progress-spinner{
+        margin-top: 100px;
+        display: flex;
+        justify-content: center;
+        .p-progress-spinner-circle{
+            stroke: #2196F3 !important;
         }
     }
 }
