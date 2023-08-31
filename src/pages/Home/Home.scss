@@ -51,6 +51,14 @@
             font-size: 18px;
         }
     }
+    .p-progress-spinner{
+        margin-top: 100px;
+        display: flex;
+        justify-content: center;
+        .p-progress-spinner-circle{
+            stroke: #2196F3 !important;
+        }
+    }
 }
 .p-dialog .p-dialog-header-icons{
     display: none !important;

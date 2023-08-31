@@ -6,7 +6,7 @@ import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { CountDown } from '../../cmps/Countdown/CountDown';
-import firebase from 'firebase/app';
+import { ProgressSpinner } from 'primereact/progressspinner';
 import 'firebase/auth';
 import './Home.scss'
 import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
@@ -28,6 +28,7 @@ export const Home = () => {
     const dispatch = useDispatch()
 
     useEffect(() => {
+        socketService.emit('ping', null)
         if (user.isLogin) {
             setPlayer({
                 id: user.id,
@@ -192,17 +193,23 @@ export const Home = () => {
                 </div>}
             </div>
         )
-    } else if(!user.isLogin) return (
-        <div className="home container">
-            <Dialog header={headerContent} visible={visible} style={{ width: '40vw', textAlign: 'center' }} onHide={() => setVisible(false)} aria-controls={visible ? 'dlg' : null} aria-expanded={visible ? true : false}>
-                <div style={{ margin: '0' }}>
-                    <p style={{ margin: '0', marginBottom: '1.5rem' }}>In order to see your past results you have to login</p>
-                    <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                        <Button severity="secondary" label="Play as a guest" onClick={() => setPlayerLogin('Guest')} />
-                        <Button label="Login with Google" onClick={() => setPlayerLogin('Google')} autoFocus />
+    } else if (!user.isLogin) {
+        return (
+            <div className="home container">
+                <Dialog header={headerContent} visible={visible} style={{ width: '40vw', textAlign: 'center' }} onHide={() => setVisible(false)} aria-controls={visible ? 'dlg' : null} aria-expanded={visible ? true : false}>
+                    <div style={{ margin: '0' }}>
+                        <p style={{ margin: '0', marginBottom: '1.5rem' }}>In order to see your past results you have to login</p>
+                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                            <Button severity="secondary" label="Play as a guest" onClick={() => setPlayerLogin('Guest')} />
+                            <Button label="Login with Google" onClick={() => setPlayerLogin('Google')} autoFocus />
+                        </div>
                     </div>
-                </div>
-            </Dialog>
+                </Dialog>
+            </div>
+        )
+    } else return (
+        <div className="home conatiner">
+            <ProgressSpinner />
         </div>
     )
 }
