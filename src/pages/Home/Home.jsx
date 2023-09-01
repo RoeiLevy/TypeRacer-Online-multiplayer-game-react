@@ -208,7 +208,7 @@ export const Home = () => {
             </div>
         )
     } else return (
-        <div className="home conatiner">
+        <div className="home container">
             <ProgressSpinner />
         </div>
     )
