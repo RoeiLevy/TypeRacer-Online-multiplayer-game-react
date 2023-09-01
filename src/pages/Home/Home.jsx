@@ -74,23 +74,28 @@ export const Home = () => {
 
     const handleChangeInput = (e) => {
         const { value } = e.target
-        if (value.length < inputValue.length) {
-            document.querySelector(`.letter-${currentLetterIdx - 1}`).style.color = ''
-            setCurrentLetterIdx(currentLetterIdx - 1)
-            setInputValue(value)
-            return
-        }
         setInputValue(value)
-        const lastWrittenLetter = value.charAt(value.length - 1)
-        if (lastWrittenLetter === room.quote.text[currentLetterIdx]) {
+        const matchingLetter = value.charAt(currentLetterIdx)
+        if (value.length < inputValue.length) {
+            const letterEl = document.querySelector(`.letter-${value.length}`)
+            if (letterEl.style.color === 'green') setCurrentLetterIdx(currentLetterIdx - 1)
+            letterEl.style.color = ''
+        } else if (matchingLetter === room.quote.text[currentLetterIdx]) {
             document.querySelector(`.letter-${currentLetterIdx}`).style.color = 'green'
             setCurrentLetterIdx(currentLetterIdx + 1)
         } else {
-            document.querySelector(`.letter-${currentLetterIdx}`).style.color = 'red'
-            setCurrentLetterIdx(currentLetterIdx + 1)
+            const wrongLettersLength = value.length - currentLetterIdx
+            console.log("TCL: handleChangeInput -> wrongLettersLength", wrongLettersLength)
+            for (let i = 0; i < wrongLettersLength; i++) {
+                document.querySelector(`.letter-${i + currentLetterIdx}`).style.color = 'red'
+            }
         }
-        setPlayer({ ...player, progress: getProgress() })
     }
+
+    useEffect(() => {
+        if (!room) return
+        setPlayer({ ...player, progress: getProgress() })
+    }, [currentLetterIdx])
 
     useEffect(() => {
         if (!player) return
@@ -106,7 +111,7 @@ export const Home = () => {
     }, [player])
 
     const getProgress = () => {
-        return Math.floor((currentLetterIdx + 1) / room.quote.text.length * 100)
+        return Math.floor((currentLetterIdx) / room.quote.text.length * 100)
     }
     const getResults = () => {
         const wpm = ((60 / (Math.round(Date.now() - room.startTimestamp) / 1000)) * room.quote.text.split(' ').length)
