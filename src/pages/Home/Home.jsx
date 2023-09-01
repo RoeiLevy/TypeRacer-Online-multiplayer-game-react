@@ -131,7 +131,13 @@ export const Home = () => {
 
     const headerContent = <div>Choose how you would like to play</div>;
 
-    if (room) {
+    if (!room && user.id) {
+        return (
+            <div className="home container">
+                <ProgressSpinner />
+            </div>
+        )
+    } else if (room) {
         return (
             <div className="home container">
                 <div className="timer">
@@ -176,23 +182,17 @@ export const Home = () => {
                 </div>}
             </div>
         )
-    } else if (!user.id && !user.isLogin) {
-        return (
-            <div className="home container">
-                <Dialog header={headerContent} visible={visible} style={{ width: '40vw', textAlign: 'center' }} onHide={() => setVisible(false)} aria-controls={visible ? 'dlg' : null} aria-expanded={visible ? true : false}>
-                    <div style={{ margin: '0' }}>
-                        <p style={{ margin: '0', marginBottom: '1.5rem' }}>In order to see your past results you have to login</p>
-                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                            <Button severity="secondary" label="Play as a guest" onClick={() => setPlayerLogin('Guest')} />
-                            <Button label="Login with Google" onClick={() => setPlayerLogin('Google')} autoFocus />
-                        </div>
-                    </div>
-                </Dialog>
-            </div>
-        )
     } else return (
-        <div className="home conatiner">
-            <ProgressSpinner />
+        <div className="home container">
+            <Dialog header={headerContent} visible={visible} style={{ width: '40vw', textAlign: 'center' }} onHide={() => setVisible(false)} aria-controls={visible ? 'dlg' : null} aria-expanded={visible ? true : false}>
+                <div style={{ margin: '0' }}>
+                    <p style={{ margin: '0', marginBottom: '1.5rem' }}>In order to see your past results you have to login</p>
+                    <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                        <Button severity="secondary" label="Play as a guest" onClick={() => setPlayerLogin('Guest')} />
+                        <Button label="Login with Google" onClick={() => setPlayerLogin('Google')} autoFocus />
+                    </div>
+                </div>
+            </Dialog>
         </div>
     )
 }
