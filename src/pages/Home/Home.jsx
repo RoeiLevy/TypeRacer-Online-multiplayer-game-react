@@ -92,6 +92,7 @@ export const Home = () => {
         }
     }
 
+    
     useEffect(() => {
         if (!room) return
         setPlayer({ ...player, progress: getProgress() })
